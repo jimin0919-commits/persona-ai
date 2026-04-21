@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PersonaAI — 가상 고객 페르소나 생성</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #1D9E75;
+    --teal-dark: #085041;
+    --teal-light: #E1F5EE;
+    --teal-mid: #0F6E56;
+    --purple: #534AB7;
+    --purple-light: #EEEDFE;
+    --purple-dark: #3C3489;
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --gray-50: #F1EFE8;
+    --gray-400: #888780;
+    --text: #1a1a18;
+    --text-muted: #6b6b67;
+    --text-faint: #9e9d98;
+    --border: rgba(0,0,0,0.1);
+    --border-light: rgba(0,0,0,0.06);
+    --bg: #FAFAF8;
+    --white: #ffffff;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .serif { font-family: 'Outfit', sans-serif; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(250,250,248,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 2vw;
+  }
+  .nav-inner {
+    max-width: 1920px; margin: 0 auto;
+    display: flex; align-items: center;
+    height: 60px; gap: 2rem;
+  }
+  .logo { font-family: 'Outfit', sans-serif; font-size: 20px; letter-spacing: -0.3px; text-decoration: none; color: var(--text); }
+  .logo span { color: var(--teal); }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; margin-left: auto; }
+  .nav-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color .2s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    background: var(--teal-dark); color: #fff !important;
+    padding: 8px 18px; border-radius: 8px; font-weight: 500 !important;
+  }
+
+  /* ── LAYOUT ── */
+  .section { padding: 96px 2vw; }
+  .section-inner { max-width: 1920px; margin: 0 auto; }
+  .section-alt { background: var(--white); }
+
+  .eyebrow {
+    display: inline-block;
+    font-size: 11px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--text-faint); margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(28px, 4vw, 38px);
+    font-weight: 400; line-height: 1.15;
+    letter-spacing: -0.3px; margin-bottom: 1rem;
+  }
+  .section-sub {
+    font-size: 16px; color: var(--text-muted);
+    line-height: 1.7; font-weight: 300;
+    max-width: 540px; margin-bottom: 3rem;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 120px 2vw 96px;
+    background: var(--white);
+    border-bottom: 0.5px solid var(--border);
+    overflow: hidden;
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -120px; right: -60px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(29,158,117,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-inner { max-width: 1920px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 48px 80px; align-items: start; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--teal-light); color: var(--teal-dark);
+    font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+    padding: 5px 12px; border-radius: 20px; margin-bottom: 1.5rem;
+    text-transform: uppercase;
+  }
+  .hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
+  .hero h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(28px, 3.5vw, 42px);
+    font-weight: 400; line-height: 1.1;
+    letter-spacing: -1px; margin-bottom: 1.5rem;
+  }
+  .hero h1 em { font-style: normal; font-weight: 600; color: var(--teal); }
+  .hero-desc {
+    font-size: 17px; color: var(--text-muted);
+    line-height: 1.7; font-weight: 300;
+    margin-bottom: 2.5rem; max-width: 460px;
+  }
+  .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--teal-dark); color: #fff;
+    padding: 13px 26px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    text-decoration: none; border: none; cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: background .2s;
+  }
+  .btn-primary:hover { background: var(--teal-mid); }
+  .btn-ghost {
+    background: transparent; color: var(--text-muted);
+    padding: 13px 26px; border-radius: 10px;
+    font-size: 14px; font-weight: 400;
+    text-decoration: none; border: 0.5px solid var(--border);
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: border-color .2s, color .2s;
+  }
+  .btn-ghost:hover { color: var(--text); border-color: rgba(0,0,0,0.2); }
+
+  /* hero right: persona preview */
+  .hero-visual {
+    background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: 16px; padding: 1.5rem; position: relative;
+  }
+  .hv-bar {
+    display: flex; gap: 6px; margin-bottom: 1.25rem;
+  }
+  .hv-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+  .hv-label { font-size: 11px; color: var(--text-faint); margin-left: 4px; align-self: center; }
+  .persona-mini {
+    background: var(--white); border: 0.5px solid var(--border);
+    border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 10px;
+  }
+  .pm-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .pm-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500;
+  }
+  .pm-name { font-size: 13px; font-weight: 500; }
+  .pm-role { font-size: 11px; color: var(--text-faint); }
+  .pm-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .pm-tag {
+    font-size: 10px; font-weight: 500;
+    padding: 3px 8px; border-radius: 20px;
+  }
+
+  /* ── STATS ── */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border: 0.5px solid var(--border); border-radius: 14px;
+    overflow: hidden; margin-top: 3rem;
+  }
+  .stat {
+    padding: 1.5rem 1.5rem; border-right: 0.5px solid var(--border);
+    text-align: center; min-width: 0;
+  }
+  .stat:last-child { border-right: none; }
+  .stat-num { font-family: 'Outfit', sans-serif; font-size: 22px; color: var(--teal); display: block; white-space: nowrap; text-align: center; }
+  .stat-num.small { font-size: 15px; }
+  .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 5px; display: block; line-height: 1.5; word-break: keep-all; }
+
+  /* ── HOW ── */
+  .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border-light); border: 0.5px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .step-card { background: var(--white); padding: 1.75rem 1.5rem; }
+  .step-n { font-family: 'Outfit', sans-serif; font-size: 28px; color: var(--border); line-height: 1; margin-bottom: 1rem; }
+  .step-card h3 { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .step-card p { font-size: 13px; color: var(--text-muted); line-height: 1.6; font-weight: 300; }
+
+  /* ── TARGET ── */
+  .target-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .target-card {
+    border: 0.5px solid var(--border); border-radius: 14px;
+    overflow: hidden; transition: border-color .2s;
+  }
+  .target-card:hover { border-color: rgba(0,0,0,0.18); }
+  .tc-head { padding: 1.25rem 1.5rem 1rem; border-bottom: 0.5px solid var(--border-light); }
+  .tc-icon-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .tc-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+  .tc-name { font-size: 14px; font-weight: 500; }
+  .tc-type { font-size: 11px; color: var(--text-faint); }
+  .tc-desc { font-size: 12px; color: var(--text-muted); line-height: 1.55; font-weight: 300; }
+  .tc-body { padding: 1rem 1.5rem; background: var(--bg); }
+  .tc-pain-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-faint); margin-bottom: 6px; }
+  .tc-pain { font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-bottom: 4px; display: flex; gap: 6px; }
+  .tc-dot { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+
+  /* ── PIPELINE ── */
+  .pipeline-list { border: 0.5px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .pl-item { display: grid; grid-template-columns: 60px 1fr; border-bottom: 0.5px solid var(--border-light); }
+  .pl-item:last-child { border-bottom: none; }
+  .pl-num { display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; font-size: 24px; border-right: 0.5px solid var(--border-light); }
+  .pl-body { padding: 1.25rem 1.5rem; }
+  .pl-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .pl-core { font-size: 10px; font-weight: 500; background: var(--amber-light); color: #633806; padding: 2px 8px; border-radius: 10px; }
+  .pl-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; font-weight: 300; }
+  .pl-tag { display: inline-block; font-size: 10px; font-weight: 500; padding: 3px 9px; border-radius: 20px; margin-top: 8px; margin-right: 4px; }
+
+  /* ── TEAM ── */
+  .team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .member-card { border: 0.5px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .mc-head { padding: 1.5rem; display: flex; gap: 14px; border-bottom: 0.5px solid var(--border-light); }
+  .mc-avatar { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; font-size: 18px; flex-shrink: 0; }
+  .mc-name { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
+  .mc-role { font-size: 11px; color: var(--text-faint); margin-bottom: 6px; }
+  .mc-desc { font-size: 12px; color: var(--text-muted); line-height: 1.6; font-weight: 300; }
+  .mc-body { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 10px; }
+  .mc-item { display: flex; gap: 10px; }
+  .mc-icon { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .mc-item-title { font-size: 12px; font-weight: 500; margin-bottom: 1px; }
+  .mc-item-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; font-weight: 300; }
+
+  .synergy-bar { background: var(--teal-dark); border-radius: 14px; padding: 1.5rem 2rem; display: flex; align-items: center; gap: 20px; }
+  .sb-text { color: #fff; font-size: 14px; line-height: 1.6; font-weight: 300; }
+  .sb-text strong { font-weight: 500; }
+  .sb-btn { background: #5DCAA5; color: #04342C; padding: 10px 20px; border-radius: 8px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; white-space: nowrap; margin-left: auto; flex-shrink: 0; }
+
+  /* ── ENGINEER EDGE ── */
+  .edge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .edge-concept { border-radius: 12px; overflow: hidden; border: 0.5px solid var(--border); }
+  .ec-head { padding: 1.1rem 1.25rem; border-bottom: 0.5px solid var(--border-light); }
+  .ec-eye { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .ec-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .ec-def { font-size: 12px; line-height: 1.55; font-weight: 300; }
+  .ec-body { padding: 1rem 1.25rem; }
+  .ec-item { display: flex; gap: 7px; font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-bottom: 6px; font-weight: 300; }
+  .ec-dot { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+
+  .vs-table { border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .vs-head { display: grid; grid-template-columns: 1fr 1fr 1fr; background: var(--bg); }
+  .vs-h { padding: 0.75rem 1rem; font-size: 11px; font-weight: 500; text-align: center; border-right: 0.5px solid var(--border-light); }
+  .vs-h:last-child { border-right: none; }
+  .vs-row { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 0.5px solid var(--border-light); }
+  .vs-c { padding: 0.75rem 1rem; font-size: 12px; text-align: center; color: var(--text-muted); border-right: 0.5px solid var(--border-light); font-weight: 300; line-height: 1.45; }
+  .vs-c:first-child { text-align: left; font-weight: 500; color: var(--text); }
+  .vs-c:last-child { border-right: none; }
+  .ck { display: inline-block; width: 16px; height: 16px; border-radius: 50%; background: var(--teal-light); font-size: 9px; line-height: 16px; text-align: center; margin-right: 3px; color: var(--teal-dark); }
+  .cx { display: inline-block; width: 16px; height: 16px; border-radius: 50%; background: var(--gray-50); font-size: 9px; line-height: 16px; text-align: center; margin-right: 3px; color: var(--gray-400); }
+
+  /* ── DATA STRATEGY ── */
+  .data-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .data-card { border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .data-card-head { padding: 0.85rem 1.1rem; border-bottom: 0.5px solid var(--border-light); }
+  .data-card-name { font-size: 13px; font-weight: 500; }
+  .data-card-type { font-size: 10px; margin-top: 2px; }
+  .data-card-body { padding: 0.85rem 1.1rem; }
+  .data-card-desc { font-size: 11px; color: var(--text-muted); line-height: 1.55; font-weight: 300; margin-bottom: 8px; }
+  .data-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .dtag { font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 20px; }
+
+  /* ── QUOTE ── */
+  .quote-block { border-left: 2px solid var(--teal); padding: 1rem 1.5rem; background: var(--white); border-radius: 0 10px 10px 0; margin-top: 16px; }
+  .q-text { font-family: 'Outfit', sans-serif; font-size: 17px; font-style: italic; line-height: 1.5; margin-bottom: 6px; }
+  .q-attr { font-size: 11px; color: var(--text-faint); }
+
+  /* ── CTA ── */
+  .cta-section { background: var(--teal-dark); padding: 96px 2vw; text-align: center; }
+  .cta-inner { max-width: 560px; margin: 0 auto; }
+  .cta-section h2 { font-family: 'Outfit', sans-serif; font-size: clamp(28px, 4vw, 38px); font-weight: 300; color: #fff; margin-bottom: 1rem; line-height: 1.2; }
+  .cta-section p { font-size: 16px; color: rgba(255,255,255,0.65); margin-bottom: 2rem; font-weight: 300; line-height: 1.7; }
+  .cta-btn { background: #5DCAA5; color: #04342C; padding: 15px 32px; border-radius: 10px; font-size: 15px; font-weight: 500; border: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: background .2s; }
+  .cta-btn:hover { background: #9FE1CB; }
+
+  /* ── FOOTER ── */
+  footer { padding: 2rem 2vw; border-top: 0.5px solid var(--border); background: var(--white); }
+  .footer-inner { max-width: 1920px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+  .footer-logo { font-family: 'Outfit', sans-serif; font-size: 16px; color: var(--text); text-decoration: none; }
+  .footer-logo span { color: var(--teal); }
+  .footer-copy { font-size: 12px; color: var(--text-faint); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.6s ease both; }
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.2s; }
+  .delay-3 { animation-delay: 0.3s; }
+  .delay-4 { animation-delay: 0.4s; }
+  .delay-5 { animation-delay: 0.5s; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+    .hero-visual { display: none; }
+    .steps-grid { grid-template-columns: 1fr 1fr; }
+    .target-grid, .team-grid, .edge-grid { grid-template-columns: 1fr; }
+    .data-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .stat { border-right: none; border-bottom: 0.5px solid var(--border); }
+    .stat:last-child { border-bottom: none; }
+    .synergy-bar { flex-direction: column; text-align: center; }
+    .sb-btn { margin-left: 0; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">Persona <span>AI</span></a>
+    <ul class="nav-links">
+      <li><a href="#how">서비스</a></li>
+      <li><a href="#target">고객</a></li>
+      <li><a href="#team">팀</a></li>
+      <li><a href="#cta" class="nav-cta">데모 신청</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-badge fade-up">AI-powered market research</div>
+      <h1 class="fade-up delay-1">실제 고객처럼<br>반응하는 <em>가상 페르소나</em>를<br>만듭니다</h1>
+      <p class="hero-desc fade-up delay-2">SNS, 여행, 투자 데이터를 분석해 브랜드에 딱 맞는 타겟 페르소나를 자동 생성합니다. 설문 없이, 빠르게, 더 정확하게.</p>
+      <div class="hero-btns fade-up delay-3">
+        <a href="#cta" class="btn-primary">데모 신청 →</a>
+        <a href="#how" class="btn-ghost">작동 방식 보기</a>
+      </div>
+      <div class="stats-row fade-up delay-5" style="margin-top:2.5rem; grid-column: 1 / -1;">
+        <div class="stat"><span class="stat-num small">72h→2h</span><span class="stat-label">페르소나 생성 시간 단축</span></div>
+        <div class="stat"><span class="stat-num small">3,000+</span><span class="stat-label">크롤링 인플루언서 및 잠재 충성고객 데이터</span></div>
+        <div class="stat"><span class="stat-num">B2B</span><span class="stat-label">기업 마케팅팀 전용</span></div>
+        <div class="stat"><span class="stat-num">맞춤형</span><span class="stat-label">타겟 도메인별 맞춤 서비스 가능</span></div>
+      </div>
+    </div>
+    <div class="hero-visual fade-up delay-2">
+      <div class="hv-bar">
+        <div class="hv-dot"></div><div class="hv-dot"></div><div class="hv-dot"></div>
+        <span class="hv-label">생성된 페르소나 — 뷰티 브랜드</span>
+      </div>
+      <div class="persona-mini">
+        <div class="pm-head">
+          <div class="pm-avatar" style="background:#E1F5EE;color:#085041;">JY</div>
+          <div><div class="pm-name">김지연 (30)</div><div class="pm-role">직장인 · 서울 · 연소득 4,800만원</div></div>
+        </div>
+        <div class="pm-tags">
+          <span class="pm-tag" style="background:#E1F5EE;color:#085041;">자기계발</span>
+          <span class="pm-tag" style="background:#E6F1FB;color:#0C447C;">미니멀리즘</span>
+          <span class="pm-tag" style="background:#FAEEDA;color:#633806;">주말 쇼핑</span>
+        </div>
+      </div>
+      <div class="persona-mini">
+        <div class="pm-head">
+          <div class="pm-avatar" style="background:#EEEDFE;color:#3C3489;">SH</div>
+          <div><div class="pm-name">박서현 (26)</div><div class="pm-role">대학원생 · 부산 · 트렌드세터</div></div>
+        </div>
+        <div class="pm-tags">
+          <span class="pm-tag" style="background:#E6F1FB;color:#0C447C;">SNS 파워유저</span>
+          <span class="pm-tag" style="background:#E1F5EE;color:#085041;">얼리어답터</span>
+          <span class="pm-tag" style="background:#FAEEDA;color:#633806;">가성비</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-inner">
+    <span class="eyebrow">How it works</span>
+    <h2 class="section-title">데이터를 페르소나로 바꾸는<br>4단계 파이프라인</h2>
+    <p class="section-sub">데이터를 모으는 것과, 그것을 살아있는 고객처럼 말하게 만드는 것은 전혀 다른 기술입니다. 우리는 그 전 과정을 하나의 흐름으로 설계합니다.</p>
+    <div class="pipeline-list">
+      <div class="pl-item">
+        <div class="pl-num" style="color:var(--teal);">1</div>
+        <div class="pl-body">
+          <div class="pl-name">데이터 모으기</div>
+          <div class="pl-desc">SNS, 여행 앱, 투자 플랫폼 등 여러 곳에서 흩어진 소비자 데이터를 자동으로 수집합니다. 사람이 일일이 찾지 않아도 됩니다.</div>
+          <span class="pl-tag" style="background:#E1F5EE;color:#085041;">자동 수집 에이전트</span>
+        </div>
+      </div>
+      <div class="pl-item">
+        <div class="pl-num" style="color:var(--purple);">2</div>
+        <div class="pl-body">
+          <div class="pl-name">의미 있는 패턴 찾기</div>
+          <div class="pl-desc">날것의 데이터에서 "이 사람은 고급 여행을 즐기고 주식 투자에 관심이 많다"처럼 소비 성향과 소득 수준을 읽어냅니다.</div>
+          <span class="pl-tag" style="background:#EEEDFE;color:#3C3489;">AI 패턴 분석</span>
+        </div>
+      </div>
+      <div class="pl-item">
+        <div class="pl-num" style="color:var(--amber);">3</div>
+        <div class="pl-body">
+          <div class="pl-name">페르소나로 연결하기 <span class="pl-core">핵심 기술</span></div>
+          <div class="pl-desc">분석한 패턴을 AI 모델에 올바른 방식으로 전달해, 실제 사람처럼 말하고 반응하는 가상 고객을 만들어냅니다. 데이터를 어떻게 구성해서 전달하느냐가 품질을 결정합니다.</div>
+          <span class="pl-tag" style="background:#FAEEDA;color:#633806;">페르소나 생성</span>
+          <span class="pl-tag" style="background:#FAEEDA;color:#633806;">데이터 설계</span>
+        </div>
+      </div>
+      <div class="pl-item">
+        <div class="pl-num" style="color:var(--gray-400);">4</div>
+        <div class="pl-body">
+          <div class="pl-name">검증하고 계속 개선하기</div>
+          <div class="pl-desc">만들어진 페르소나가 실제로 맞는지 자동으로 채점하고, 틀린 부분을 스스로 고쳐가는 구조입니다. 쓸수록 더 정확해집니다.</div>
+          <span class="pl-tag" style="background:#F1EFE8;color:#444441;">자동 품질 검증</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TARGET -->
+<section class="section section-alt" id="target">
+  <div class="section-inner">
+    <span class="eyebrow">Target customers</span>
+    <h2 class="section-title">이런 팀에서 활용합니다</h2>
+    <p class="section-sub">고객 이해가 곧 경쟁력인 팀을 위해 설계됐습니다.</p>
+    <div class="target-grid">
+
+      <div class="target-card">
+        <div class="tc-head">
+          <div class="tc-icon-row">
+            <div class="tc-icon" style="background:#E1F5EE;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2L9.8 6.2L14.5 6.7L11.2 9.7L12.1 14.3L8 12L3.9 14.3L4.8 9.7L1.5 6.7L6.2 6.2L8 2Z" stroke="#0F6E56" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            </div>
+            <div><div class="tc-name">브랜드 마케팅팀</div><div class="tc-type">대기업 · 중견기업</div></div>
+          </div>
+          <div class="tc-desc">캠페인 기획 전 타겟 고객을 빠르게 정의하고, 크리에이티브 방향성을 페르소나 기반으로 검증합니다.</div>
+        </div>
+        <div class="tc-body">
+          <div class="tc-pain-label">해결하는 문제</div>
+          <div class="tc-pain"><div class="tc-dot" style="background:var(--teal);margin-top:5px"></div><span>"타겟이 누군지 알지만 깊이 모른다"</span></div>
+          <div class="tc-pain"><div class="tc-dot" style="background:var(--teal);margin-top:5px"></div><span>리서치에 3~4주가 걸려 타이밍을 놓침</span></div>
+        </div>
+      </div>
+
+      <div class="target-card">
+        <div class="tc-head">
+          <div class="tc-icon-row">
+            <div class="tc-icon" style="background:#E6F1FB;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="9" rx="2" stroke="#185FA5" stroke-width="1.2"/><path d="M5 13v1M11 13v1M4 15h8" stroke="#185FA5" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </div>
+            <div><div class="tc-name">디지털 에이전시</div><div class="tc-type">마케팅 대행사 · 컨설팅</div></div>
+          </div>
+          <div class="tc-desc">클라이언트 온보딩 시 빠르게 고객 페르소나를 제시하고, 차별화된 전략 제안서를 만들 수 있습니다.</div>
+        </div>
+        <div class="tc-body">
+          <div class="tc-pain-label">해결하는 문제</div>
+          <div class="tc-pain"><div class="tc-dot" style="background:#378ADD;margin-top:5px"></div><span>매번 새 클라이언트마다 리서치 반복</span></div>
+          <div class="tc-pain"><div class="tc-dot" style="background:#378ADD;margin-top:5px"></div><span>페르소나 설득력 부족으로 수주 실패</span></div>
+        </div>
+      </div>
+
+      <div class="target-card">
+        <div class="tc-head">
+          <div class="tc-icon-row">
+            <div class="tc-icon" style="background:#FAEEDA;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h2l2 7h6l2-5H6" stroke="#BA7517" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="13" r="1" fill="#BA7517"/><circle cx="12" cy="13" r="1" fill="#BA7517"/></svg>
+            </div>
+            <div><div class="tc-name">이커머스 · D2C 브랜드</div><div class="tc-type">온라인 셀러 · 스타트업</div></div>
+          </div>
+          <div class="tc-desc">세분화된 고객 군을 파악하고, 채널별 메시지를 최적화해 구매 전환율을 높입니다.</div>
+        </div>
+        <div class="tc-body">
+          <div class="tc-pain-label">해결하는 문제</div>
+          <div class="tc-pain"><div class="tc-dot" style="background:var(--amber);margin-top:5px"></div><span>광고비 대비 ROAS가 낮고 타겟이 분산됨</span></div>
+          <div class="tc-pain"><div class="tc-dot" style="background:var(--amber);margin-top:5px"></div><span>누가 왜 사는지 데이터는 있지만 해석 어려움</span></div>
+        </div>
+      </div>
+
+      <div class="target-card">
+        <div class="tc-head">
+          <div class="tc-icon-row">
+            <div class="tc-icon" style="background:#EEEDFE;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="4" height="4" rx="1" stroke="#534AB7" stroke-width="1.2"/><rect x="9" y="3" width="4" height="4" rx="1" stroke="#534AB7" stroke-width="1.2"/><rect x="3" y="9" width="4" height="4" rx="1" stroke="#534AB7" stroke-width="1.2"/><rect x="9" y="9" width="4" height="4" rx="1" stroke="#534AB7" stroke-width="1.2"/></svg>
+            </div>
+            <div><div class="tc-name">제품 기획 · PM팀</div><div class="tc-type">테크 기업 · SaaS</div></div>
+          </div>
+          <div class="tc-desc">신기능 출시 전 다양한 사용자 유형의 반응을 시뮬레이션해 제품 방향성을 조기에 검증합니다.</div>
+        </div>
+        <div class="tc-body">
+          <div class="tc-pain-label">해결하는 문제</div>
+          <div class="tc-pain"><div class="tc-dot" style="background:var(--purple);margin-top:5px"></div><span>유저 인터뷰가 느리고 편향될 수 있음</span></div>
+          <div class="tc-pain"><div class="tc-dot" style="background:var(--purple);margin-top:5px"></div><span>출시 후 예상 밖 반응으로 리소스 낭비</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- DATA STRATEGY -->
+<section class="section" id="data">
+  <div class="section-inner">
+    <span class="eyebrow">Data sources</span>
+    <h2 class="section-title">구매력 있는 고객층 데이터를<br>지속 축적합니다</h2>
+    <p class="section-sub">소득원천과 소비패턴을 연결하는 3가지 데이터 소스로 페르소나의 신뢰도를 높입니다.</p>
+    <div class="data-grid">
+      <div class="data-card">
+        <div class="data-card-head" style="background:#E1F5EE;">
+          <div class="data-card-name" style="color:#085041;">마이리얼트립</div>
+          <div class="data-card-type" style="color:#0F6E56;">여행 소비 데이터</div>
+        </div>
+        <div class="data-card-body">
+          <div class="data-card-desc">해외여행 예약, 숙박 등급, 지출 규모로 고소득층 여행 소비패턴을 파악합니다.</div>
+          <div class="data-tags"><span class="dtag" style="background:#E1F5EE;color:#085041;">공개 API</span><span class="dtag" style="background:#E1F5EE;color:#085041;">실시간</span></div>
+        </div>
+      </div>
+      <div class="data-card">
+        <div class="data-card-head" style="background:#FAEEDA;">
+          <div class="data-card-name" style="color:#633806;">주식 투자자 데이터</div>
+          <div class="data-card-type" style="color:#854F0B;">소득원천 추정</div>
+        </div>
+        <div class="data-card-body">
+          <div class="data-card-desc">증권사 리서치와 투자자 커뮤니티 데이터로 투자소득 비중과 자산 규모를 추정합니다.</div>
+          <div class="data-tags"><span class="dtag" style="background:#FAEEDA;color:#633806;">지속 조사</span><span class="dtag" style="background:#FAEEDA;color:#633806;">패널 추적</span></div>
+        </div>
+      </div>
+      <div class="data-card">
+        <div class="data-card-head" style="background:#EEEDFE;">
+          <div class="data-card-name" style="color:#3C3489;">SNS 인플루언서</div>
+          <div class="data-card-type" style="color:#534AB7;">소비 라이프스타일</div>
+        </div>
+        <div class="data-card-body">
+          <div class="data-card-desc">팔로워 반응, 협찬 브랜드 티어, 콘텐츠 카테고리로 소비 수준과 라이프스타일을 분류합니다.</div>
+          <div class="data-tags"><span class="dtag" style="background:#EEEDFE;color:#3C3489;">크롤링</span><span class="dtag" style="background:#EEEDFE;color:#3C3489;">패턴 분석</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section class="section section-alt" id="team">
+  <div class="section-inner">
+    <span class="eyebrow">Our team</span>
+    <h2 class="section-title">기술과 브랜드 인사이트가<br><em style="font-style:italic;color:var(--teal)">한 팀</em>에 있습니다</h2>
+    <p class="section-sub">AI의 작동 원리를 근본부터 이해하는 엔지니어와, 마케팅·브랜드 현장을 깊이 아는 기획자가 함께 만듭니다.</p>
+
+    <div class="team-grid">
+      <div class="member-card">
+        <div class="mc-head">
+          <div class="mc-avatar" style="background:#E1F5EE;color:#085041;">AI</div>
+          <div>
+            <div class="mc-name">AI 엔지니어</div>
+            <div class="mc-role">Machine Learning · LLM Architecture</div>
+            <div class="mc-desc">AI 학습 원리를 근본부터 이해하는 엔지니어. 단순 API 호출이 아닌, 모델 내부 메커니즘을 직접 설계합니다.</div>
+          </div>
+        </div>
+        <div class="mc-body">
+          <div class="mc-item">
+            <div class="mc-icon" style="background:#E1F5EE;">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="#0F6E56" stroke-width="1.2"/><path d="M4 6.5l2 2 3-3" stroke="#0F6E56" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div><div class="mc-item-title">데이터 → 페르소나 파이프라인 설계</div><div class="mc-item-desc">수집부터 페르소나 완성까지 전 과정을 직접 구현</div></div>
+          </div>
+          <div class="mc-item">
+            <div class="mc-icon" style="background:#E1F5EE;">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1.5" y="1.5" width="4" height="4" rx="1" stroke="#0F6E56" stroke-width="1.2"/><rect x="7.5" y="1.5" width="4" height="4" rx="1" stroke="#0F6E56" stroke-width="1.2"/><rect x="1.5" y="7.5" width="4" height="4" rx="1" stroke="#0F6E56" stroke-width="1.2"/><rect x="7.5" y="7.5" width="4" height="4" rx="1" stroke="#0F6E56" stroke-width="1.2"/></svg>
+            </div>
+            <div><div class="mc-item-title">AI에게 올바르게 전달하는 기술</div><div class="mc-item-desc">같은 모델로 경쟁사 대비 높은 품질 출력</div></div>
+          </div>
+          <div class="mc-item">
+            <div class="mc-icon" style="background:#E1F5EE;">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 9.5L4.5 5.5l2.5 3L10 3l2 4" stroke="#0F6E56" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div><div class="mc-item-title">쓸수록 개선되는 구조 설계</div><div class="mc-item-desc">자동 품질 검증 → 지속 축적 → 격차 확대</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="member-card">
+        <div class="mc-head">
+          <div class="mc-avatar" style="background:#EEEDFE;color:#3C3489;">BR</div>
+          <div>
+            <div class="mc-name">마케팅 기획자</div>
+            <div class="mc-role">Brand Strategy · Consumer Insight</div>
+            <div class="mc-desc">브랜드 마케팅 현장에서 쌓은 소비자 인사이트로, AI 결과물이 실제 비즈니스 언어로 말하게 만듭니다.</div>
+          </div>
+        </div>
+        <div class="mc-body">
+          <div class="mc-item">
+            <div class="mc-icon" style="background:#EEEDFE;">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="4.5" r="2.5" stroke="#534AB7" stroke-width="1.2"/><path d="M1.5 11c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="#534AB7" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </div>
+            <div><div class="mc-item-title">브랜드 포지셔닝 감각</div><div class="mc-item-desc">페르소나가 실제 캠페인에 바로 쓰이는 언어로 설계</div></div>
+          </div>
+          <div class="mc-item">
+            <div class="mc-icon" style="background:#EEEDFE;">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 3.5h10M1.5 6.5h7M1.5 9.5h5" stroke="#534AB7" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </div>
+            <div><div class="mc-item-title">소비자 심리 · 구매 동기 분석</div><div class="mc-item-desc">구매 결정에 작용하는 심리적 변수를 페르소나에 반영</div></div>
+          </div>
+          <div class="mc-item">
+            <div class="mc-icon" style="background:#EEEDFE;">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1.5" y="2.5" width="10" height="8" rx="2" stroke="#534AB7" stroke-width="1.2"/><path d="M4.5 2.5V1.5M8.5 2.5V1.5" stroke="#534AB7" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </div>
+            <div><div class="mc-item-title">B2B 세일즈 · GTM 전략</div><div class="mc-item-desc">마케팅팀과 동일한 언어로 소통하는 현장 경험</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="synergy-bar">
+      <div class="sb-text">
+        <strong>기술 × 인사이트</strong> — 두 역량이 한 팀에 있기 때문에,<br>AI가 만든 페르소나가 실제 마케팅에 바로 쓰입니다.
+      </div>
+      <button class="sb-btn">데모 신청 →</button>
+    </div>
+
+    <!-- Engineer Edge -->
+    <div style="margin-top:3rem;">
+      <span class="eyebrow">Engineer edge</span>
+      <h3 style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:400;margin-bottom:0.5rem;letter-spacing:-0.3px;">AI를 진짜로 다룰 줄 아는 두 가지 역량</h3>
+      <p style="font-size:14px;color:var(--text-muted);font-weight:300;margin-bottom:1.5rem;">대부분의 AI 서비스는 모델을 그냥 "호출"합니다. 우리는 모델이 어떻게 생각하는지 이해하고 설계합니다.</p>
+
+      <div class="edge-grid" style="margin-bottom:16px;">
+        <div class="edge-concept">
+          <div class="ec-head" style="background:#E1F5EE;">
+            <div class="ec-eye" style="color:#0F6E56;">AI 운영 설계</div>
+            <div class="ec-name" style="color:#085041;">하네스 엔지니어링</div>
+            <div class="ec-def" style="color:#0F6E56;">AI가 원하는 방식으로 안정적으로 작동하도록 전체 시스템을 설계하는 역량</div>
+          </div>
+          <div class="ec-body">
+            <div class="ec-item"><div class="ec-dot" style="background:var(--teal)"></div>수집부터 결과까지 각 단계를 독립적으로 구성해 오류 격리</div>
+            <div class="ec-item"><div class="ec-dot" style="background:var(--teal)"></div>대량 처리 시에도 품질 일관성 유지</div>
+            <div class="ec-item"><div class="ec-dot" style="background:var(--teal)"></div>쓸수록 자동으로 개선되는 피드백 루프</div>
+          </div>
+        </div>
+        <div class="edge-concept">
+          <div class="ec-head" style="background:#EEEDFE;">
+            <div class="ec-eye" style="color:#534AB7;">데이터 전달 설계</div>
+            <div class="ec-name" style="color:#3C3489;">컨텍스트 엔지니어링</div>
+            <div class="ec-def" style="color:#534AB7;">수집한 데이터를 AI가 제대로 이해하도록 구성하고 전달하는 방법 설계</div>
+          </div>
+          <div class="ec-body">
+            <div class="ec-item"><div class="ec-dot" style="background:var(--purple)"></div>같은 데이터도 전달 방식에 따라 결과가 완전히 달라짐</div>
+            <div class="ec-item"><div class="ec-dot" style="background:var(--purple)"></div>직접 실험하고 쌓아온 노하우</div>
+            <div class="ec-item"><div class="ec-dot" style="background:var(--purple)"></div>경쟁사와 가장 차이나는 핵심 역량</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vs-table">
+        <div class="vs-head">
+          <div class="vs-h" style="text-align:left;">역량</div>
+          <div class="vs-h" style="color:var(--teal-mid);">PersonaAI</div>
+          <div class="vs-h">일반 AI 에이전시</div>
+        </div>
+        <div class="vs-row"><div class="vs-c">전체 파이프라인 직접 설계</div><div class="vs-c"><span class="ck">✓</span>자체 구현</div><div class="vs-c"><span class="cx">–</span>외부 툴 의존</div></div>
+        <div class="vs-row"><div class="vs-c">AI 전달 방식 최적화 경험</div><div class="vs-c"><span class="ck">✓</span>심층 설계</div><div class="vs-c"><span class="cx">–</span>기본 프롬프트</div></div>
+        <div class="vs-row"><div class="vs-c">출력 품질 자동 검증</div><div class="vs-c"><span class="ck">✓</span>자동화</div><div class="vs-c"><span class="cx">–</span>수동 확인</div></div>
+        <div class="vs-row"><div class="vs-c">데이터 축적으로 품질 향상</div><div class="vs-c"><span class="ck">✓</span>누적 구조</div><div class="vs-c"><span class="cx">–</span>매번 초기화</div></div>
+      </div>
+
+      <div class="quote-block">
+        <div class="q-text">"데이터를 모으는 팀은 많습니다. 그것을 진짜 고객처럼 말하게 만드는 팀은 드뭅니다."</div>
+        <div class="q-attr">PersonaAI가 경쟁사와 다른 이유</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <div class="cta-inner">
+    <h2>지금 바로 시작해 보세요</h2>
+    <p>지금 데모를 신청하고 PersonaAI가 만드는<br>페르소나를 직접 확인해 보세요.</p>
+    <button class="cta-btn">데모 신청하기</button>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <a href="#" class="footer-logo">Persona<span>AI</span></a>
+    <span class="footer-copy">© 2025 PersonaAI. All rights reserved.</span>
+  </div>
+</footer>
+
+</body>
+</html>
